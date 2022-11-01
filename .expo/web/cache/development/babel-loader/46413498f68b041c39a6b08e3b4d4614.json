@@ -1,0 +1,1 @@
+{"ast":null,"code":"export { default } from \"./ChooseUserScreen\";","map":{"version":3,"names":["default"],"sources":["C:/Users/netra/Documents/GitHub/RoutineRemind/screens/ChooseUserScreen/index.js"],"sourcesContent":["export { default } from './ChooseUserScreen';"],"mappings":"AAAA,SAASA,OAAO"},"metadata":{},"sourceType":"module"}

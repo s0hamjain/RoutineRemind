@@ -1,0 +1,1 @@
+{"ast":null,"code":"export { default } from \"./ChooseUserScreen\";","map":{"version":3,"names":["default"],"sources":["/Users/sandeepjain/Routine-Remind/screens/ChooseUserScreen/index.js"],"sourcesContent":["export { default } from './ChooseUserScreen';"],"mappings":"AAAA,SAASA,OAAT"},"metadata":{},"sourceType":"module"}

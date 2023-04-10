@@ -3,17 +3,21 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import Logo from '../../assets/images/PersonIcon.png';
 import CustomButton from '../../components/CustomButton/CustomButton'
 import { useNavigation } from '@react-navigation/native'
+import { useRoute } from '@react-navigation/native';
 
 const ParentScreen = () => {
   const [currentDate, setCurrentDate] = useState('')
   const navigation = useNavigation()
+  const route = useRoute();
+  const keyword = route.params?.keyword;
+  const answer = route.params?.answer;
 
   useEffect(() => {
     var date = new Date().getDate()
     var month = new Date().getMonth() + 1
     var year = new Date().getFullYear()
     setCurrentDate(
-      month + '/' + date
+      month + '/' + date + '/' + year
     )
     return () => {}
   }, [])
@@ -27,7 +31,8 @@ const ParentScreen = () => {
   }
 
   const handleBack = () => {
-    navigation.navigate('ChooseUser')
+    console.log(answer)
+    navigation.navigate('ChooseUser', { keyword: keyword, answer: answer });
   }
 
   return (

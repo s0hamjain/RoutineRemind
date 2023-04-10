@@ -6,9 +6,14 @@ import {useForm, Controller} from 'react-hook-form';
 import { auth } from '../../firebase'
 import { useNavigation } from '@react-navigation/native'
 import HomeScreen from '../HomeScreen/HomeScreen';
+import { useRoute } from '@react-navigation/native';
 
 const ChooseUserScreen = () => {
   const navigation = useNavigation()
+  const route = useRoute();
+  const keyword = route.params?.keyword;
+  const answer = route.params?.answer;
+
   const handleSignOut = () => {
       auth
         .signOut()
@@ -23,7 +28,8 @@ const ChooseUserScreen = () => {
   }
 
   const handleStudent = () => {
-    navigation.navigate('StudentScreen')
+    console.log(answer)
+    navigation.navigate('StudentScreen', { keyword: keyword, answer: answer });
   }
 
   return (

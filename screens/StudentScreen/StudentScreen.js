@@ -8,9 +8,25 @@ import { Oval } from "react-loader-spinner"
 import axios from "axios"
 import Audio1 from '../../assets/images/audio1.png';
 import useSpeechToText, { ResultType } from './Hooks';
+import { useRoute } from '@react-navigation/native';
 
 const StudentScreen = () => {
   const navigation = useNavigation()
+  const [currentDate, setCurrentDate] = useState('')
+  const [text, setText] = useState("")
+  const route = useRoute();
+  const keyword = route.params?.keyword;
+  const answer = route.params?.answer;
+
+  useEffect(() => {
+    var date = new Date().getDate()
+    var month = new Date().getMonth() + 1
+    var year = new Date().getFullYear()
+    setCurrentDate(
+      month + '/' + date + '/' + year
+    )
+    return () => {}
+  }, [])
 
   const handleBack = () => {
     navigation.navigate('ChooseUser')
@@ -33,7 +49,8 @@ const StudentScreen = () => {
   });
 
   const handleSubmit = (error) => {
-    navigation.navigate('QuestionScreen')
+    console.log(answer)
+    navigation.navigate('QuestionScreen', { keyword: keyword, answer: answer });
   }
 
   return (
@@ -42,7 +59,7 @@ const StudentScreen = () => {
       <Text style={styles.title}>Child Profile</Text>
       <br/>
       <img width="145" height="135" src={Logo} /> 
-      <Text style={styles.text}>Today's Date: 10/29</Text>
+      <Text style={styles.text}>Today's Date: {currentDate}</Text>
       <img width="315" height="280" src={Audio1} onClick={isRecording ? stopSpeechToText : startSpeechToText} />
       <ul style={{color: "white", listStyle: "none", fontFamily: "sans-serif", fontWeight: "bold", fontSize: "18px"}}>
           {(results).map((result) => (

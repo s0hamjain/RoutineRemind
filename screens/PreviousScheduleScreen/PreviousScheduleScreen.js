@@ -6,6 +6,9 @@ import CustomButton from '../../components/CustomButton/CustomButton';
 const PreviousScheduleScreen = () => {
   const navigation = useNavigation()
 
+  const today = new Date();
+  const formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+
   const handleBack = () => {
     navigation.navigate('ParentScreen')
   }
@@ -14,23 +17,22 @@ const PreviousScheduleScreen = () => {
     navigation.navigate('PrevScheduleScreen')
   }
 
+  const handleMore = () => {
+    navigation.navigate('MorePreviousScheduleScreen')
+  }
+
   return (
     <ScrollView>
       <View style={styles.root}>
         <br/>
         <Text style={styles.title}>Past Schedules</Text>
         <br/><br/><br/>
-        <CustomButton text={"10/29"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"10/28"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"10/27"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"10/26"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"10/25"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"10/24"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"10/23"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"10/22"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"10/21"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"10/20"} onPress={handlePrev} type="EXTRA"/>
-        <CustomButton text={"See more   ▼"} onPress={handlePrev} type="TERTIARY"/>
+        <CustomButton text={`${today.getMonth() + 1}/${today.getDate() - 1}/${today.getFullYear()}`} onPress={handlePrev} type="EXTRA"/>
+        <CustomButton text={`${today.getMonth() + 1}/${today.getDate() - 2}/${today.getFullYear()}`} onPress={handlePrev} type="EXTRA"/>
+        <CustomButton text={`${today.getMonth() + 1}/${today.getDate() - 3}/${today.getFullYear()}`} onPress={handlePrev} type="EXTRA"/>
+        <CustomButton text={`${today.getMonth() + 1}/${today.getDate() - 4}/${today.getFullYear()}`} onPress={handlePrev} type="EXTRA"/>
+        <CustomButton text={`${today.getMonth() + 1}/${today.getDate() - 5}/${today.getFullYear()}`} onPress={handlePrev} type="EXTRA"/>
+        <CustomButton text={"See more   ▼"} onPress={handleMore} type="TERTIARY"/>
         <br/><br/>
         <CustomButton text={"Go Back"} onPress={handleBack} type="SECONDARY"/>
         <br/><br/><br/><br/><br/><br/>

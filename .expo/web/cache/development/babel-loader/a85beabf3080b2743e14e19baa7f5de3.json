@@ -1,0 +1,1 @@
+{"ast":null,"code":"export { default } from \"./MorePreviousScheduleScreen\";","map":{"version":3,"names":["default"],"sources":["/Users/sandeepjain/Routine-Remind/screens/MorePreviousScheduleScreen/index.js"],"sourcesContent":["export { default } from './MorePreviousScheduleScreen';"],"mappings":"AAAA,SAASA,OAAT"},"metadata":{},"sourceType":"module"}

@@ -1,4 +1,3 @@
-import { View, Text } from 'react-native'
 import React from 'react'
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -18,6 +17,7 @@ import QuestionScreen from '../screens/QuestionScreen/QuestionScreen';
 import PrevScheduleScreen from '../screens/PrevScheduleScreen/PrevScheduleScreen';
 import TodayScheduleScreenTwo from '../screens/TodayScheduleScreenTwo/TodayScheduleScreenTwo';
 import TodayScheduleScreenThree from '../screens/TodayScheduleScreenThree/TodayScheduleScreenThree';
+import MorePreviousScheduleScreen from '../screens/MorePreviousScheduleScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -40,6 +40,7 @@ const Navigation = () => {
           <Stack.Screen name="TodayScheduleScreenThree" component={TodayScheduleScreenThree} />
           <Stack.Screen name="QuestionScreen" component={QuestionScreen} />
           <Stack.Screen name="PrevScheduleScreen" component={PrevScheduleScreen} />
+          <Stack.Screen name="MorePreviousScheduleScreen" component={MorePreviousScheduleScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   )

@@ -11,11 +11,20 @@ import useSpeechToText, { ResultType } from '../StudentScreen/Hooks';
 
 const TodayScheduleScreen = () => {
   const navigation = useNavigation();
-  const {control, watch} = useForm();
-  const keyword = watch('keyword');
+  const [keyword, setKeyword] = useState("");
+
+  const handleKeywordChange = (value) => {
+    setKeyword(value);
+  };
+
+  const returnKeyword = () => {
+    return keyword;
+  }
 
   const handleBack = () => {
-    navigation.navigate('ParentScreen')
+    console.log(keyword)
+    console.log(results)
+    navigation.navigate('ParentScreen', { keyword: keyword, answer: (results).map((result) => (result.transcript))});
   }
 
   const handlePlus = () => {
@@ -46,7 +55,13 @@ const TodayScheduleScreen = () => {
       
       <div style={{display: "inline", width: "100%"}}>
         <Text style={styles.text}>Action Item 1</Text>
-        <input placeholder="Keyword" style={{height: 35, marginLeft: 18, fontSize: 18, width: 175, marginTop: 24}}></input>
+        <TextInput
+          placeholder="Keyword"
+          style={{ paddingLeft: 20, paddingTop: 12, paddingBottom: 12, borderRadius: 10, height: 45, marginLeft: 18, fontSize: 18, width: 210, marginTop: 24, backgroundColor: 'white' }}
+          onChangeText={handleKeywordChange}
+          text={keyword}
+        ></TextInput>
+        <br/>
         <img width="100" height="90" style={{}} src={Audio1} onClick={isRecording ? stopSpeechToText : startSpeechToText}/>
         <ul style={{color: "white", listStyle: "none", fontFamily: "sans-serif", fontWeight: "bold", fontSize: "18px"}}>
           {(results).map((result) => (
@@ -56,7 +71,7 @@ const TodayScheduleScreen = () => {
       </ul>
       </div>
 
-      <br/><br/>
+      <br/>
       <div>
         <img width="95" height="90" src={Minus}/>
         <Text>       </Text>

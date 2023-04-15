@@ -12,6 +12,7 @@ const ChooseUserScreen = () => {
   const navigation = useNavigation()
   const route = useRoute();
   const keyword = route.params?.keyword;
+  const soundUrl = route.params?.soundUrl;
   const answer = route.params?.answer;
 
   const handleSignOut = () => {
@@ -29,7 +30,7 @@ const ChooseUserScreen = () => {
 
   const handleStudent = () => {
     console.log(answer)
-    navigation.navigate('StudentScreen', { keyword: keyword, answer: answer });
+    navigation.navigate('StudentScreen', { keyword: keyword, soundUrl: soundUrl, answer: answer });
   }
 
   return (

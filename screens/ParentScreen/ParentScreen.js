@@ -10,6 +10,7 @@ const ParentScreen = () => {
   const navigation = useNavigation()
   const route = useRoute();
   const keyword = route.params?.keyword;
+  const soundUrl = route.params?.soundUrl;
   const answer = route.params?.answer;
 
   useEffect(() => {
@@ -31,8 +32,9 @@ const ParentScreen = () => {
   }
 
   const handleBack = () => {
+    console.log(soundUrl)
     console.log(answer)
-    navigation.navigate('ChooseUser', { keyword: keyword, answer: answer });
+    navigation.navigate('ChooseUser', { keyword: keyword, soundUrl: soundUrl, answer: answer });
   }
 
   return (

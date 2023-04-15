@@ -7,6 +7,7 @@ import MicRecorder from "mic-recorder-to-mp3"
 import { Oval } from "react-loader-spinner"
 import axios from "axios"
 import Audio1 from '../../assets/images/audio1.png';
+import Audio2 from '../../assets/images/audio2.png';
 import useSpeechToText, { ResultType } from './Hooks';
 import { useRoute } from '@react-navigation/native';
 
@@ -16,6 +17,7 @@ const StudentScreen = () => {
   const [text, setText] = useState("")
   const route = useRoute();
   const keyword = route.params?.keyword;
+  const soundUrl = route.params?.soundUrl;
   const answer = route.params?.answer;
 
   useEffect(() => {
@@ -50,7 +52,7 @@ const StudentScreen = () => {
 
   const handleSubmit = (error) => {
     console.log(answer)
-    navigation.navigate('QuestionScreen', { keyword: keyword, answer: answer });
+    navigation.navigate('QuestionScreen', { keyword: keyword, soundUrl: soundUrl, answer: answer });
   }
 
   return (
@@ -58,10 +60,9 @@ const StudentScreen = () => {
       <br/>
       <Text style={styles.title}>Child Profile</Text>
       <br/>
-      <img width="145" height="135" src={Logo} /> 
       <Text style={styles.text}>Today's Date: {currentDate}</Text>
-      <img width="315" height="280" src={Audio1} onClick={isRecording ? stopSpeechToText : startSpeechToText} />
-      <ul style={{color: "white", listStyle: "none", fontFamily: "sans-serif", fontWeight: "bold", fontSize: "18px"}}>
+      <img width="285" height="285" src={isRecording ? Audio2 : Audio1} onClick={isRecording ? stopSpeechToText : startSpeechToText} />
+      <ul style={{color: "white", listStyle: "none", fontFamily: "sans-serif", fontWeight: "bold", fontSize: "18px", marginLeft: "-50px", marginBottom: "8"}}>
           {(results).map((result) => (
             <li key={result.timestamp}>{result.transcript}</li>
           ))}

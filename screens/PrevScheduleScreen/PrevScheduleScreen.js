@@ -53,7 +53,7 @@ const PrevScheduleScreen = () => {
       <div style={{display: "inline", width: "100%"}}>
         <Text style={styles.text}>Action Item 1</Text>
         <input value={"Basketball"} style={{height: 35, marginLeft: 18, fontSize: 18, width: 175, marginTop: 24}}></input>
-        <img width="100" height="90" style={{}} src={Audio1} onClick={() => basketballAudio.play()}/>
+        <img width="90" height="90" style={{}} src={Audio1} onClick={() => basketballAudio.play()}/>
         <ul style={{color: "white", listStyle: "none", fontFamily: "sans-serif", fontWeight: "bold", fontSize: "18px"}}>
           You have basketball practice today after school
         </ul>
@@ -62,7 +62,7 @@ const PrevScheduleScreen = () => {
       <div style={{display: "inline", width: "100%"}}>
         <Text style={styles.text}>Action Item 2</Text>
         <input value={"Piano"} style={{height: 35, marginLeft: 18, fontSize: 18, width: 175, marginTop: 24}}></input>
-        <img width="100" height="90" style={{}} src={Audio1} onClick={() => pianoAudio.play()}/>
+        <img width="90" height="90" style={{}} src={Audio1} onClick={() => pianoAudio.play()}/>
         <ul style={{color: "white", listStyle: "none", fontFamily: "sans-serif", fontWeight: "bold", fontSize: "18px"}}>
           You have piano practice at 5:30 PM today
         </ul>
@@ -71,7 +71,7 @@ const PrevScheduleScreen = () => {
       <div style={{display: "inline", width: "100%"}}>
         <Text style={styles.text}>Action Item 3</Text>
         <input value={"Laundry"} style={{height: 35, marginLeft: 18, fontSize: 18, width: 175, marginTop: 24}}></input>
-        <img width="100" height="90" style={{}} src={Audio1} onClick={() => laundryAudio.play()}/>
+        <img width="90" height="90" style={{}} src={Audio1} onClick={() => laundryAudio.play()}/>
         <ul style={{color: "white", listStyle: "none", fontFamily: "sans-serif", fontWeight: "bold", fontSize: "18px"}}>
           Remember to do the laundry before going to sleep
         </ul>

@@ -5,26 +5,30 @@ import CustomButton from '../../components/CustomButton/CustomButton';
 import { useNavigation } from '@react-navigation/native';
 import {useForm, Controller} from 'react-hook-form';
 import Audio1 from '../../assets/images/audio1.png';
+import Audio2 from '../../assets/images/audio2.png';
 import Plus from '../../assets/images/plus.png';
 import Minus from '../../assets/images/minus.png';
 import useSpeechToText, { ResultType } from '../StudentScreen/Hooks';
+import { Audio } from 'expo-av';
 
 const TodayScheduleScreen = () => {
   const navigation = useNavigation();
   const [keyword, setKeyword] = useState("");
+  const [recording, setRecording] = React.useState();
+  const [soundUrl, setSoundUrl] = useState("");
 
   const handleKeywordChange = (value) => {
     setKeyword(value);
   };
 
-  const returnKeyword = () => {
-    return keyword;
-  }
+  const handleSoundUrlChange = (value) => {
+    setSoundUrl(value);
+  };
 
   const handleBack = () => {
     console.log(keyword)
     console.log(results)
-    navigation.navigate('ParentScreen', { keyword: keyword, answer: (results).map((result) => (result.transcript))});
+    navigation.navigate('ParentScreen', { keyword: keyword, soundUrl: soundUrl, answer: (results).map((result) => (result.transcript))});
   }
 
   const handlePlus = () => {
@@ -47,6 +51,34 @@ const TodayScheduleScreen = () => {
     useLegacyResults: false
   });
 
+  async function startRecording() {
+    try {
+      console.log('Requesting permissions..');
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      }); 
+      console.log('Starting recording..');
+      const recording = new Audio.Recording();
+      await recording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+      await recording.startAsync(); 
+      setRecording(recording);
+      console.log('Recording started');
+    } catch (err) {
+      console.error('Failed to start recording', err);
+    }
+  }
+  async function stopRecording() {
+    console.log('Stopping recording..');
+    setRecording(undefined);
+    await recording.stopAndUnloadAsync();
+    const uri = recording.getURI(); 
+    handleSoundUrlChange(uri);
+    console.log(soundUrl);
+    console.log('Recording stopped and stored at', uri);
+  }
+  
   return (
     <View style={styles.root}>
       <br/>
@@ -62,7 +94,7 @@ const TodayScheduleScreen = () => {
           text={keyword}
         ></TextInput>
         <br/>
-        <img width="100" height="90" style={{}} src={Audio1} onClick={isRecording ? stopSpeechToText : startSpeechToText}/>
+        <img width="90" height="90" style={{}} src={recording ? Audio2 : Audio1} onClick={recording ? stopRecording : startRecording}/>
         <ul style={{color: "white", listStyle: "none", fontFamily: "sans-serif", fontWeight: "bold", fontSize: "18px"}}>
           {(results).map((result) => (
             <li key={result.timestamp}>{result.transcript}</li>

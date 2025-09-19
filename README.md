@@ -6,7 +6,8 @@ RoutineRemind was built using:
 - React
 - Javascript
 - Typescript
-- HTML
-- CSS
+- Python (Jupyter Notebook)
+- HTML/CSS
 - Google Firebase (login authentication and scheduling data)
+
 

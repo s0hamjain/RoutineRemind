@@ -48,6 +48,15 @@ interface BackendApi {
         @Body request: TextResponseRequest,
     ): QuestionResponse
 
+    @POST("chat")
+    suspend fun askChat(@Body request: ChatRequest): ChatResponse
+
+    @GET("chat/history")
+    suspend fun chatHistory(
+        @Query("ownerUid") ownerUid: String? = null,
+        @Query("limit") limit: Int = 20,
+    ): List<ChatMessage>
+
     @POST("questions/{questionId}/responses/media")
     suspend fun createMediaUpload(
         @Path("questionId") questionId: String,

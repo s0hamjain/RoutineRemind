@@ -32,12 +32,11 @@ public class FirebaseConfig {
     }
 
     @Bean
-    public FirebaseApp firebaseApp() throws IOException {
+    public FirebaseApp firebaseApp(GoogleCredentials credentials) {
         if (!FirebaseApp.getApps().isEmpty()) {
             return FirebaseApp.getInstance();
         }
 
-        GoogleCredentials credentials = loadCredentials();
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(credentials)
                 .setProjectId(props.getGcp().getProjectId())
@@ -65,15 +64,16 @@ public class FirebaseConfig {
     }
 
     @Bean
-    public Storage storage() throws IOException {
+    public Storage storage(GoogleCredentials credentials) {
         return StorageOptions.newBuilder()
                 .setProjectId(props.getGcp().getProjectId())
-                .setCredentials(loadCredentials())
+                .setCredentials(credentials)
                 .build()
                 .getService();
     }
 
-    private GoogleCredentials loadCredentials() throws IOException {
+    @Bean
+    public GoogleCredentials googleCredentials() throws IOException {
         String path = props.getGcp().getServiceAccountPath();
         if (path != null && !path.isBlank() && Files.exists(Path.of(path))) {
             try (InputStream in = new FileInputStream(path)) {

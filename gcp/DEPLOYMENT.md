@@ -1,6 +1,6 @@
 # RoutineRemind M6 Deployment
 
-This guide deploys the Spring Boot API and both web apps to Cloud Run, then
+This guide deploys the Spring Boot API and the Angular web portal to Cloud Run, then
 configures Cloud Scheduler to trigger FCM reminders.
 
 Project: `routineremind`
@@ -40,6 +40,7 @@ Make sure `backend-sa` has these roles:
 - Storage Object Admin
 - Cloud Speech Client
 - Firebase Cloud Messaging API Admin
+- Vertex AI User
 
 Set a scheduler shared secret:
 
@@ -58,7 +59,7 @@ gcloud run deploy routineremind-api \
   --region us-central1 \
   --service-account backend-sa@routineremind.iam.gserviceaccount.com \
   --allow-unauthenticated \
-  --set-env-vars ROUTINEREMIND_GCP_PROJECT_ID=routineremind,ROUTINEREMIND_GCP_STORAGE_BUCKET=routineremind-media,ROUTINEREMIND_REMINDERS_SCHEDULER_TOKEN="$SCHEDULER_TOKEN"
+  --set-env-vars ROUTINEREMIND_GCP_PROJECT_ID=routineremind,ROUTINEREMIND_GCP_STORAGE_BUCKET=routineremind-media,ROUTINEREMIND_AI_LOCATION=us-central1,ROUTINEREMIND_AI_MODEL=gemini-1.5-flash,ROUTINEREMIND_REMINDERS_SCHEDULER_TOKEN="$SCHEDULER_TOKEN"
 ```
 
 Capture the backend URL:
@@ -68,15 +69,15 @@ export API_URL="$(gcloud run services describe routineremind-api --region us-cen
 echo "$API_URL"
 ```
 
-After deploying the web services, redeploy the backend with production CORS:
+After deploying the web portal, redeploy the backend with production CORS:
 
 ```bash
 gcloud run services update routineremind-api \
   --region us-central1 \
-  --set-env-vars ROUTINEREMIND_CORS_ALLOWED_ORIGINS="$ADMIN_URL,$PORTAL_URL"
+  --set-env-vars ROUTINEREMIND_CORS_ALLOWED_ORIGINS="$PORTAL_URL"
 ```
 
-## 3. Angular admin
+## 3. Angular parent/child portal
 
 ```bash
 gcloud builds submit web-admin \
@@ -88,27 +89,11 @@ gcloud run deploy routineremind-admin \
   --region us-central1 \
   --allow-unauthenticated
 
-export ADMIN_URL="$(gcloud run services describe routineremind-admin --region us-central1 --format='value(status.url)')"
-echo "$ADMIN_URL"
-```
-
-## 4. Vue student portal
-
-```bash
-gcloud builds submit web-portal \
-  --config web-portal/cloudbuild.yaml \
-  --substitutions _API_BASE_URL="$API_URL/api/v1"
-
-gcloud run deploy routineremind-portal \
-  --image us-central1-docker.pkg.dev/routineremind/routineremind/web-portal:latest \
-  --region us-central1 \
-  --allow-unauthenticated
-
-export PORTAL_URL="$(gcloud run services describe routineremind-portal --region us-central1 --format='value(status.url)')"
+export PORTAL_URL="$(gcloud run services describe routineremind-admin --region us-central1 --format='value(status.url)')"
 echo "$PORTAL_URL"
 ```
 
-## 5. Cloud Scheduler reminders
+## 4. Cloud Scheduler reminders
 
 The backend exposes:
 
@@ -135,7 +120,7 @@ Run it manually:
 gcloud scheduler jobs run routineremind-morning-reminders --location us-central1
 ```
 
-## 6. Device tokens
+## 5. Device tokens
 
 Clients register FCM tokens with:
 
@@ -152,7 +137,7 @@ Android registers its FCM token automatically after login. Web push requires a
 VAPID key and service worker and is intentionally left as a follow-up so M6 can
 ship with Android reminders first.
 
-## 7. Storage CORS
+## 6. Storage CORS
 
 For browser media uploads:
 

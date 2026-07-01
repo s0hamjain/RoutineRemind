@@ -8,6 +8,12 @@ public record ScheduleItem(
         String time,
         String title,
         String description,
+        String icon,
+        String imageUrl,
+        String parentNote,
+        String audioUrl,
+        String transitionHint,
+        Integer sortOrder,
         boolean completed,
         String completedAt
 ) {

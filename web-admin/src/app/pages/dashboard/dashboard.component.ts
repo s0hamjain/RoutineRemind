@@ -5,9 +5,9 @@ import { Router } from '@angular/router';
 import {
   ApiService,
   AppUser,
+  ChatMessage,
+  ChatResponse,
   LinkedStudent,
-  Question,
-  QuestionResponse,
   Schedule,
   ScheduleItem,
 } from '../../core/api.service';
@@ -22,7 +22,7 @@ import { AuthService } from '../../core/auth.service';
       <div class="brand">
         <div class="brand-mark">RR</div>
         <strong>RoutineRemind</strong>
-        <span class="rr-badge">Admin</span>
+        <span class="rr-badge">Family Portal</span>
       </div>
       <div class="user">
         @if (user()) {
@@ -41,17 +41,17 @@ import { AuthService } from '../../core/auth.service';
         <!-- Role selection -->
         <div class="rr-card role-card">
           <h1>Welcome to RoutineRemind</h1>
-          <p class="rr-caption">Tell us who you are to get started.</p>
+          <p class="rr-caption">Choose how this account will use the portal. You can create routines as a parent or use a calm child view for the daily schedule.</p>
           <div class="role-grid">
             <button class="role-option" (click)="chooseRole('parent')">
               <span class="emoji">👨‍👩‍👧</span>
               <strong>I'm a Parent</strong>
-              <span class="rr-caption">Create and manage schedules for my students.</span>
+              <span class="rr-caption">Create visual routines and review child questions.</span>
             </button>
             <button class="role-option" (click)="chooseRole('student')">
               <span class="emoji">🎓</span>
               <strong>I'm a Student</strong>
-              <span class="rr-caption">View my schedule and complete tasks.</span>
+              <span class="rr-caption">See my day and ask questions about what comes next.</span>
             </button>
           </div>
         </div>
@@ -76,11 +76,13 @@ import { AuthService } from '../../core/auth.service';
           <div class="share-code">{{ user()?.shareCode }}</div>
           <p class="rr-caption">Give this to your parent so they can link to your account.</p>
         </div>
+        <ng-container *ngTemplateOutlet="childChat" />
         <ng-container *ngTemplateOutlet="todayBlock" />
       } @else {
         <!-- Parent with linked student -->
         <ng-container *ngTemplateOutlet="studentSwitcher" />
         <ng-container *ngTemplateOutlet="scheduleManager" />
+        <ng-container *ngTemplateOutlet="chatHistoryBlock" />
         <ng-container *ngTemplateOutlet="todayBlock" />
       }
     </main>
@@ -135,9 +137,12 @@ import { AuthService } from '../../core/auth.service';
             @for (item of formItems; track item.id) {
               <div class="form-item">
                 <input class="rr-input time-input" [(ngModel)]="item.time" placeholder="08:00" />
+                <input class="rr-input icon-input" [(ngModel)]="item.icon" placeholder="icon" />
                 <input class="rr-input" [(ngModel)]="item.title" placeholder="Task title" />
-                <input class="rr-input" [(ngModel)]="item.description" placeholder="Description" />
                 <button class="rr-btn rr-btn-ghost compact" (click)="removeFormItem(item.id)">Remove</button>
+                <input class="rr-input item-wide" [(ngModel)]="item.description" placeholder="Short child-facing description" />
+                <input class="rr-input item-wide" [(ngModel)]="item.parentNote" placeholder="Parent note the chatbot can use" />
+                <input class="rr-input item-wide" [(ngModel)]="item.transitionHint" placeholder="Transition hint, e.g. Then put on shoes." />
               </div>
             }
           </div>
@@ -167,57 +172,23 @@ import { AuthService } from '../../core/auth.service';
           }
         </div>
 
-        @if (editingScheduleId()) {
-          <div class="rr-card questions-card">
-            <div class="items-header">
-              <div>
-                <h2>Questions</h2>
-                <p class="rr-caption">Add prompts students answer after this schedule.</p>
-              </div>
-            </div>
-            <div class="question-form">
-              <input class="rr-input" [(ngModel)]="newQuestionPrompt" placeholder="e.g. What do you need help with today?" />
-              <button class="rr-btn rr-btn-primary" [disabled]="savingQuestion()" (click)="addQuestion()">
-                {{ savingQuestion() ? 'Adding…' : 'Add question' }}
-              </button>
-            </div>
-            @if (questionError()) { <div class="rr-error">{{ questionError() }}</div> }
-
-            <div class="question-list">
-              @for (question of questions(); track question.id) {
-                <div class="question-row">
+        <div class="rr-card preview-card">
+          <span class="rr-label">Child preview</span>
+          <h2>{{ formTitle || 'Today' }}</h2>
+          <div class="visual-list">
+            @for (item of formItems; track item.id) {
+              @if (item.title) {
+                <div class="visual-item">
+                  <span class="visual-icon">{{ item.icon || 'star' }}</span>
                   <div>
-                    <strong>{{ question.prompt }}</strong>
-                    <p class="rr-caption">Text question · {{ responseCount(question.id) }} responses</p>
+                    <strong>{{ item.title }}</strong>
+                    @if (item.transitionHint) { <p class="rr-caption">{{ item.transitionHint }}</p> }
                   </div>
-                  <button class="rr-btn rr-btn-ghost compact" (click)="loadResponses(question.id)">View responses</button>
                 </div>
-                @if (selectedQuestionId() === question.id) {
-                  <div class="responses">
-                    @for (response of responses(); track response.id) {
-                      <div class="response-row">
-                        @if (response.text) {
-                          <p>{{ response.text }}</p>
-                        }
-                        @if (response.transcript) {
-                          <p><strong>Transcript:</strong> {{ response.transcript }}</p>
-                        }
-                        @if (response.mediaUrl) {
-                          <span class="rr-caption">Media: {{ response.mediaUrl }}</span>
-                        }
-                        <span class="rr-caption">{{ response.createdAt || 'Just now' }}</span>
-                      </div>
-                    } @empty {
-                      <p class="rr-caption">No responses yet.</p>
-                    }
-                  </div>
-                }
-              } @empty {
-                <p class="rr-caption">No questions yet.</p>
               }
-            </div>
+            }
           </div>
-        }
+        </div>
       </section>
     </ng-template>
 
@@ -233,15 +204,23 @@ import { AuthService } from '../../core/auth.service';
               <h2>{{ schedule()!.title }}</h2>
               <span class="rr-badge">{{ schedule()!.status }}</span>
             </div>
-            <ul class="items">
+            <ul class="items visual-schedule">
               @for (item of schedule()!.items; track item.id) {
                 <li class="item" [class.done]="item.completed">
+                  <span class="visual-icon">{{ item.icon || 'star' }}</span>
                   <span class="time">{{ item.time }}</span>
                   <div class="item-body">
                     <strong>{{ item.title }}</strong>
                     @if (item.description) { <span class="rr-caption">{{ item.description }}</span> }
+                    @if (item.transitionHint) { <span class="rr-caption">{{ item.transitionHint }}</span> }
                   </div>
-                  <span class="status-dot" [class.done]="item.completed"></span>
+                  @if (user()?.role === 'student' && !item.completed) {
+                    <button class="rr-btn rr-btn-primary compact" [disabled]="completingItemId() === item.id" (click)="completeItem(item.id)">
+                      {{ completingItemId() === item.id ? 'Saving…' : 'Done' }}
+                    </button>
+                  } @else {
+                    <span class="status-dot" [class.done]="item.completed"></span>
+                  }
                 </li>
               }
             </ul>
@@ -252,6 +231,56 @@ import { AuthService } from '../../core/auth.service';
             <strong>No schedule for today</strong>
             <p class="rr-caption">Schedules you create will appear here.</p>
           </div>
+        }
+      </section>
+    </ng-template>
+
+    <ng-template #childChat>
+      <section class="rr-card chat-card">
+        <span class="rr-label">Ask about my day</span>
+        <h1>What do you want to know?</h1>
+        <div class="quick-prompts">
+          <button class="quick-prompt" (click)="askQuick('What do I do now?')">What now?</button>
+          <button class="quick-prompt" (click)="askQuick('What comes next?')">What next?</button>
+          <button class="quick-prompt" (click)="askQuick('When do I eat?')">When do I eat?</button>
+          <button class="quick-prompt" (click)="askQuick('I need help.')">I need help</button>
+        </div>
+        <div class="chat-input-row">
+          <input class="rr-input" [(ngModel)]="chatInput" placeholder="Ask a question about your schedule" />
+          <button class="rr-btn rr-btn-primary" [disabled]="askingChat()" (click)="askChat()">
+            {{ askingChat() ? 'Thinking…' : 'Ask' }}
+          </button>
+        </div>
+        @if (chatError()) { <div class="rr-error">{{ chatError() }}</div> }
+        @if (chatAnswer()) {
+          <div class="chat-answer">
+            <span class="rr-label">RoutineRemind says</span>
+            <p>{{ chatAnswer()!.answer }}</p>
+            @if (chatAnswer()!.matchedItem) {
+              <span class="rr-caption">About: {{ chatAnswer()!.matchedItem!.title }}</span>
+            }
+          </div>
+        }
+      </section>
+    </ng-template>
+
+    <ng-template #chatHistoryBlock>
+      <section class="rr-card chat-card">
+        <div class="today-head">
+          <div>
+            <span class="rr-label">Child questions</span>
+            <h2>Recent chat</h2>
+          </div>
+          <button class="rr-btn rr-btn-ghost compact" (click)="loadChatHistory()">Refresh</button>
+        </div>
+        @for (message of chatHistory(); track message.id) {
+          <div class="history-row">
+            <strong>{{ message.question }}</strong>
+            <p>{{ message.answer }}</p>
+            <span class="rr-caption">{{ message.createdAt || 'Just now' }} · {{ message.source || 'chat' }}</span>
+          </div>
+        } @empty {
+          <p class="rr-caption">No child questions yet. They will appear here after the child uses chat.</p>
         }
       </section>
     </ng-template>
@@ -294,8 +323,10 @@ import { AuthService } from '../../core/auth.service';
       .form-grid { display: grid; grid-template-columns: 1fr 180px; gap: 16px; }
       .items-header { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 12px; }
       .form-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-      .form-item { display: grid; grid-template-columns: 92px 1fr 1fr auto; gap: 8px; align-items: center; }
+      .form-item { display: grid; grid-template-columns: 92px 90px 1fr auto; gap: 8px; align-items: center; }
       .time-input { text-align: center; }
+      .icon-input { text-align: center; }
+      .item-wide { grid-column: span 2; }
       .compact { padding: 9px 12px; font-size: 13px; }
       .schedule-list { display: flex; flex-direction: column; gap: 8px; }
       .schedule-list-item {
@@ -305,20 +336,16 @@ import { AuthService } from '../../core/auth.service';
         cursor: pointer;
       }
       .schedule-list-item:hover { border-color: var(--rr-primary); box-shadow: var(--rr-shadow-sm); }
-      .questions-card { display: flex; flex-direction: column; gap: 16px; }
-      .question-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
-      .question-list { display: flex; flex-direction: column; gap: 10px; }
-      .question-row {
-        display: flex; align-items: center; justify-content: space-between; gap: 16px;
-        padding: 14px; border: 1px solid var(--rr-border); border-radius: var(--rr-radius-md);
+      .preview-card { display: flex; flex-direction: column; gap: 12px; }
+      .visual-list { display: flex; flex-direction: column; gap: 10px; }
+      .visual-item {
+        display: flex; align-items: center; gap: 14px; padding: 14px;
+        border-radius: var(--rr-radius-md); background: #f8fafc; border: 1px solid var(--rr-border);
       }
-      .question-row p { margin: 4px 0 0; }
-      .responses {
-        margin-left: 16px; padding-left: 16px; border-left: 2px solid var(--rr-border);
-        display: flex; flex-direction: column; gap: 8px;
+      .visual-icon {
+        width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center;
+        background: rgba(79, 70, 229, 0.1); color: var(--rr-primary); font-weight: 800;
       }
-      .response-row { background: var(--rr-bg); border-radius: var(--rr-radius-md); padding: 12px; }
-      .response-row p { margin: 0 0 4px; }
       .sched-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
       .items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
       .item {
@@ -336,9 +363,23 @@ import { AuthService } from '../../core/auth.service';
       .status-dot.done { background: var(--rr-success); border-color: var(--rr-success); }
       .empty { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 40px; }
       .empty.small { padding: 24px; }
+      .chat-card { display: flex; flex-direction: column; gap: 16px; }
+      .quick-prompts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+      .quick-prompt {
+        border: 1px solid var(--rr-border); border-radius: var(--rr-radius-md);
+        background: #eef2ff; color: var(--rr-primary-dark); font-weight: 700;
+        min-height: 64px; cursor: pointer; font: inherit;
+      }
+      .chat-input-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+      .chat-answer, .history-row {
+        background: #f8fafc; border: 1px solid var(--rr-border);
+        border-radius: var(--rr-radius-md); padding: 16px;
+      }
+      .chat-answer p, .history-row p { margin: 6px 0; }
       .skeleton { color: var(--rr-text-secondary); }
       @media (max-width: 720px) {
-        .form-grid, .form-item, .question-form { grid-template-columns: 1fr; }
+        .form-grid, .form-item, .quick-prompts, .chat-input-row { grid-template-columns: 1fr; }
+        .item-wide { grid-column: span 1; }
         .student-switcher, .switcher-controls { align-items: stretch; flex-direction: column; min-width: 0; }
       }
     `,
@@ -363,18 +404,17 @@ export class DashboardComponent {
   editingScheduleId = signal<string | null>(null);
   saving = signal(false);
   saveError = signal('');
-  questions = signal<Question[]>([]);
-  responses = signal<QuestionResponse[]>([]);
-  responseCounts = signal<Record<string, number>>({});
-  selectedQuestionId = signal('');
-  savingQuestion = signal(false);
-  questionError = signal('');
-  newQuestionPrompt = '';
+  chatInput = '';
+  askingChat = signal(false);
+  chatError = signal('');
+  chatAnswer = signal<ChatResponse | null>(null);
+  chatHistory = signal<ChatMessage[]>([]);
+  completingItemId = signal('');
   formTitle = 'Morning Routine';
   formDate = new Date().toISOString().slice(0, 10);
   formItems: ScheduleItem[] = [
-    { id: this.newId(), time: '07:30', title: 'Wake up and stretch', description: '', completed: false },
-    { id: this.newId(), time: '08:00', title: 'Eat breakfast', description: '', completed: false },
+    { id: this.newId(), time: '07:30', title: 'Wake up and stretch', description: '', icon: 'sun', parentNote: '', transitionHint: 'Start slowly.', completed: false },
+    { id: this.newId(), time: '08:00', title: 'Eat breakfast', description: '', icon: 'food', parentNote: '', transitionHint: '', completed: false },
   ];
 
   readonly todayLabel = new Date().toLocaleDateString(undefined, {
@@ -397,6 +437,7 @@ export class DashboardComponent {
         await this.loadLinkedStudents();
         await this.loadToday();
         await this.loadSchedules();
+        await this.loadChatHistory();
       } else if (profile.role === 'student') {
         await this.loadToday();
       }
@@ -439,6 +480,7 @@ export class DashboardComponent {
       await this.loadLinkedStudents();
       await this.loadToday();
       await this.loadSchedules();
+      await this.loadChatHistory();
     } catch (e: any) {
       this.linkError.set(e?.message ?? 'Could not link student.');
     } finally {
@@ -460,9 +502,6 @@ export class DashboardComponent {
       this.scheduleList.set(await this.api.schedules(ownerUid));
     } catch {
       this.scheduleList.set([]);
-      this.questions.set([]);
-      this.responses.set([]);
-      this.selectedQuestionId.set('');
     }
   }
 
@@ -471,6 +510,7 @@ export class DashboardComponent {
     this.resetForm();
     await this.loadToday();
     await this.loadSchedules();
+    await this.loadChatHistory();
   }
 
   selectedStudent(): LinkedStudent | undefined {
@@ -507,7 +547,7 @@ export class DashboardComponent {
   addFormItem() {
     this.formItems = [
       ...this.formItems,
-      { id: this.newId(), time: '', title: '', description: '', completed: false },
+      { id: this.newId(), time: '', title: '', description: '', icon: 'star', parentNote: '', transitionHint: '', completed: false },
     ];
   }
 
@@ -521,18 +561,14 @@ export class DashboardComponent {
     this.formDate = schedule.date;
     this.formItems = schedule.items.map((item) => ({ ...item }));
     this.saveError.set('');
-    this.loadQuestions(schedule.id);
   }
 
   resetForm() {
     this.editingScheduleId.set(null);
-    this.questions.set([]);
-    this.responses.set([]);
-    this.selectedQuestionId.set('');
     this.formTitle = 'Morning Routine';
     this.formDate = new Date().toISOString().slice(0, 10);
     this.formItems = [
-      { id: this.newId(), time: '07:30', title: '', description: '', completed: false },
+      { id: this.newId(), time: '07:30', title: '', description: '', icon: 'star', parentNote: '', transitionHint: '', completed: false },
     ];
     this.saveError.set('');
   }
@@ -568,9 +604,9 @@ export class DashboardComponent {
         : await this.api.createSchedule(draft);
 
       this.editingScheduleId.set(saved.id);
-      await this.loadQuestions(saved.id);
       await this.loadSchedules();
       await this.loadToday();
+      await this.loadChatHistory();
     } catch (e: any) {
       this.saveError.set(e?.message ?? 'Could not save schedule.');
     } finally {
@@ -578,62 +614,54 @@ export class DashboardComponent {
     }
   }
 
-  async addQuestion() {
-    const scheduleId = this.editingScheduleId();
-    if (!scheduleId) {
-      this.questionError.set('Save or select a schedule first.');
-      return;
-    }
-    if (!this.newQuestionPrompt.trim()) {
-      this.questionError.set('Question prompt is required.');
-      return;
-    }
+  async askQuick(message: string) {
+    this.chatInput = message;
+    await this.askChat();
+  }
 
-    this.savingQuestion.set(true);
-    this.questionError.set('');
+  async askChat() {
+    if (!this.chatInput.trim()) {
+      this.chatError.set('Type a question first.');
+      return;
+    }
+    this.askingChat.set(true);
+    this.chatError.set('');
     try {
-      await this.api.createQuestion(scheduleId, this.newQuestionPrompt);
-      this.newQuestionPrompt = '';
-      await this.loadQuestions(scheduleId);
+      const response = await this.api.askChat({ message: this.chatInput.trim() });
+      this.chatAnswer.set(response);
+      this.chatInput = '';
+      await this.loadToday();
     } catch (e: any) {
-      this.questionError.set(e?.message ?? 'Could not add question.');
+      this.chatError.set(e?.message ?? 'Could not answer that question.');
     } finally {
-      this.savingQuestion.set(false);
+      this.askingChat.set(false);
     }
   }
 
-  private async loadQuestions(scheduleId: string) {
+  async loadChatHistory() {
+    const ownerUid = this.user()?.role === 'parent' ? this.selectedStudentUid() : undefined;
+    if (this.user()?.role === 'parent' && !ownerUid) {
+      this.chatHistory.set([]);
+      return;
+    }
     try {
-      const questions = await this.api.questions(scheduleId);
-      this.questions.set(questions);
-      this.responses.set([]);
-      this.selectedQuestionId.set('');
-
-      const counts: Record<string, number> = {};
-      await Promise.all(
-        questions.map(async (question) => {
-          try {
-            counts[question.id] = (await this.api.responses(question.id)).length;
-          } catch {
-            counts[question.id] = 0;
-          }
-        }),
-      );
-      this.responseCounts.set(counts);
+      this.chatHistory.set(await this.api.chatHistory(ownerUid, 20));
     } catch {
-      this.questions.set([]);
-      this.responseCounts.set({});
+      this.chatHistory.set([]);
     }
   }
 
-  async loadResponses(questionId: string) {
-    this.selectedQuestionId.set(questionId);
-    this.responses.set(await this.api.responses(questionId));
-    this.responseCounts.set({ ...this.responseCounts(), [questionId]: this.responses().length });
-  }
-
-  responseCount(questionId: string): number {
-    return this.responseCounts()[questionId] ?? 0;
+  async completeItem(itemId: string) {
+    const current = this.schedule();
+    if (!current) {
+      return;
+    }
+    this.completingItemId.set(itemId);
+    try {
+      this.schedule.set(await this.api.completeItem(current.id, itemId));
+    } finally {
+      this.completingItemId.set('');
+    }
   }
 
   async signOut() {

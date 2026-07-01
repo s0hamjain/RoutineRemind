@@ -10,8 +10,7 @@ RoutineRemind is a ***patent-pending*** mobile and web application that was sele
 - **Android** — Kotlin + Jetpack Compose
 - **Native module** — C++ (NDK/JNI) for audio/video + speech pre-processing
 - **Backend** — Java + Spring Boot (primary API), on Cloud Run
-- **Web admin** — Angular (parent/admin dashboard)
-- **Web portal** — Vue (student portal)
+- **Web portal** — Angular (single parent/child portal)
 - **Google Cloud** — Cloud Identity Platform (auth), Firestore (data), Cloud
   Storage (media), Cloud Speech-to-Text, FCM (push)
 
@@ -20,8 +19,7 @@ RoutineRemind is a ***patent-pending*** mobile and web application that was sele
 ```
 android/       Kotlin app + C++ NDK module        (see android/README.md)
 backend/       Spring Boot API                    (primary)
-web-admin/     Angular — parent/admin dashboard
-web-portal/    Vue — student portal
+web-admin/     Angular — single parent/child web portal
 gcp/           Firestore rules + indexes          (see gcp/README.md)
 secrets/       Service-account key + config       (git-ignored)
 docs/          Architecture & spec
@@ -33,13 +31,10 @@ docs/          Architecture & spec
 # 1) Backend (http://localhost:8080)
 cd backend && ./mvnw spring-boot:run
 
-# 2) Angular admin (http://localhost:4200)
+# 2) Angular web portal (http://localhost:4200)
 cd web-admin && npm start
 
-# 3) Vue portal (http://localhost:5173)
-cd web-portal && npm run dev
-
-# 4) Android — open android/ in Android Studio (see android/README.md)
+# 3) Android — open android/ in Android Studio (see android/README.md)
 ```
 
 The backend reads its service-account key from `secrets/` (see

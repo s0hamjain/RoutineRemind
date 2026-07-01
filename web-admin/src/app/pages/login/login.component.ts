@@ -16,7 +16,7 @@ type Mode = 'signin' | 'signup' | 'reset';
           <div class="brand-mark">RR</div>
           <div>
             <h1>RoutineRemind</h1>
-            <p class="rr-caption">Parent &amp; admin dashboard</p>
+            <p class="rr-caption">Visual routines and schedule chat for families</p>
           </div>
         </div>
 

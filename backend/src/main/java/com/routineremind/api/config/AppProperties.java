@@ -8,6 +8,7 @@ public class AppProperties {
     private final Gcp gcp = new Gcp();
     private final Cors cors = new Cors();
     private final Reminders reminders = new Reminders();
+    private final Ai ai = new Ai();
 
     public Gcp getGcp() {
         return gcp;
@@ -19,6 +20,10 @@ public class AppProperties {
 
     public Reminders getReminders() {
         return reminders;
+    }
+
+    public Ai getAi() {
+        return ai;
     }
 
     public static class Gcp {
@@ -83,6 +88,36 @@ public class AppProperties {
 
         public boolean hasSchedulerToken() {
             return schedulerToken != null && !schedulerToken.isBlank();
+        }
+    }
+
+    public static class Ai {
+        private String location = "us-central1";
+        private String model = "gemini-1.5-flash";
+        private boolean enabled = true;
+
+        public String getLocation() {
+            return location;
+        }
+
+        public void setLocation(String location) {
+            this.location = location;
+        }
+
+        public String getModel() {
+            return model;
+        }
+
+        public void setModel(String model) {
+            this.model = model;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
     }
 }

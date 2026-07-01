@@ -4,13 +4,12 @@ secrets/
 google-services.json
 **/src/main/resources/service-account*.json
 
-# ---- Node / web (Angular + Vue) ----
+# ---- Node / web (Angular) ----
 node_modules/
 dist/
 .expo/
 web-admin/dist/
 web-admin/.angular/
-web-portal/dist/
 npm-debug.log*
 yarn-error.log*
 .env

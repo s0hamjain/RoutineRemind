@@ -9,13 +9,13 @@ import com.routineremind.app.auth.AuthManager
 import com.routineremind.app.auth.PushTokenManager
 import com.routineremind.app.data.ApiClient
 import com.routineremind.app.data.AppUser
+import com.routineremind.app.data.ChatRequest
+import com.routineremind.app.data.ChatResponse
 import com.routineremind.app.data.DeviceRegistration
 import com.routineremind.app.data.LinkRequest
 import com.routineremind.app.data.LinkedStudent
-import com.routineremind.app.data.Question
 import com.routineremind.app.data.RoleRequest
 import com.routineremind.app.data.Schedule
-import com.routineremind.app.data.TextResponseRequest
 import com.routineremind.app.nativebridge.NativeAudio
 import kotlinx.coroutines.launch
 
@@ -29,8 +29,6 @@ class AppViewModel : ViewModel() {
         private set
     var schedule by mutableStateOf<Schedule?>(null)
         private set
-    var questions by mutableStateOf<List<Question>>(emptyList())
-        private set
     var linkedStudents by mutableStateOf<List<LinkedStudent>>(emptyList())
         private set
     var selectedStudentUid by mutableStateOf<String?>(null)
@@ -41,7 +39,9 @@ class AppViewModel : ViewModel() {
         private set
     var completingItemId by mutableStateOf<String?>(null)
         private set
-    var answeringQuestionId by mutableStateOf<String?>(null)
+    var chatAnswer by mutableStateOf<ChatResponse?>(null)
+        private set
+    var askingChat by mutableStateOf(false)
         private set
     var nativeAudioStatus by mutableStateOf("Native media module not checked yet.")
         private set
@@ -179,20 +179,21 @@ class AppViewModel : ViewModel() {
         }
     }
 
-    fun submitAnswer(questionId: String, text: String) {
-        if (text.isBlank()) {
-            error = "Answer cannot be empty."
+    fun askChat(message: String) {
+        if (message.isBlank()) {
+            error = "Question cannot be empty."
             return
         }
         viewModelScope.launch {
-            answeringQuestionId = questionId
+            askingChat = true
             error = null
             try {
-                ApiClient.api.submitTextResponse(questionId, TextResponseRequest(text))
+                chatAnswer = ApiClient.api.askChat(ChatRequest(message = message.trim()))
+                loadToday()
             } catch (e: Exception) {
-                error = e.message ?: "Could not submit answer."
+                error = e.message ?: "Could not answer that question."
             } finally {
-                answeringQuestionId = null
+                askingChat = false
             }
         }
     }
@@ -209,10 +210,8 @@ class AppViewModel : ViewModel() {
     private suspend fun loadToday() {
         schedule = try {
             val loadedSchedule = ApiClient.api.todaySchedule(if (profile?.role == "parent") selectedStudentUid else null)
-            questions = ApiClient.api.questions(loadedSchedule.id)
             loadedSchedule
         } catch (e: Exception) {
-            questions = emptyList()
             null // 404 → empty state
         }
     }

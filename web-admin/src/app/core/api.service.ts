@@ -25,6 +25,12 @@ export interface ScheduleItem {
   time: string;
   title: string;
   description?: string;
+  icon?: string;
+  imageUrl?: string;
+  parentNote?: string;
+  audioUrl?: string;
+  transitionHint?: string;
+  sortOrder?: number;
   completed: boolean;
   completedAt?: string;
 }
@@ -62,6 +68,30 @@ export interface QuestionResponse {
   text?: string;
   mediaUrl?: string;
   transcript?: string;
+  createdAt?: string;
+}
+
+export interface ChatRequest {
+  ownerUid?: string;
+  message: string;
+}
+
+export interface ChatResponse {
+  answer: string;
+  scheduleId: string;
+  matchedItem?: ScheduleItem;
+  source: 'rules' | 'gemini' | 'fallback' | string;
+  createdAt?: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  ownerUid: string;
+  question: string;
+  answer: string;
+  scheduleId?: string;
+  matchedItemId?: string;
+  source?: string;
   createdAt?: string;
 }
 
@@ -170,5 +200,21 @@ export class ApiService {
 
   responses(questionId: string): Promise<QuestionResponse[]> {
     return this.request<QuestionResponse[]>(`/questions/${questionId}/responses`);
+  }
+
+  askChat(request: ChatRequest): Promise<ChatResponse> {
+    return this.request<ChatResponse>('/chat', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  chatHistory(ownerUid?: string, limit = 20): Promise<ChatMessage[]> {
+    const params = new URLSearchParams();
+    if (ownerUid) {
+      params.set('ownerUid', ownerUid);
+    }
+    params.set('limit', String(limit));
+    return this.request<ChatMessage[]>(`/chat/history?${params.toString()}`);
   }
 }

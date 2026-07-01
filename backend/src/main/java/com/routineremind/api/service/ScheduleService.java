@@ -178,7 +178,7 @@ public class ScheduleService {
     /**
      * Resolves whose schedule to show. Students see their own; parents see a linked student.
      */
-    private String resolveStudentUid(String uid, String requestedOwnerUid) {
+    public String resolveStudentUid(String uid, String requestedOwnerUid) {
         User user = userService.require(uid);
         if (Role.PARENT.wire().equals(user.role())) {
             if (user.linkedUserIds() == null || user.linkedUserIds().isEmpty()) {
@@ -269,6 +269,12 @@ public class ScheduleService {
             map.put("time", item.time() == null ? "" : item.time());
             map.put("title", item.title().trim());
             map.put("description", item.description() == null ? "" : item.description());
+            map.put("icon", item.icon() == null ? "star" : item.icon());
+            map.put("imageUrl", item.imageUrl());
+            map.put("parentNote", item.parentNote() == null ? "" : item.parentNote());
+            map.put("audioUrl", item.audioUrl());
+            map.put("transitionHint", item.transitionHint() == null ? "" : item.transitionHint());
+            map.put("sortOrder", item.sortOrder() == null ? out.size() : item.sortOrder());
             map.put("completed", item.completed());
             map.put("completedAt", item.completedAt());
             out.add(map);
@@ -302,6 +308,12 @@ public class ScheduleService {
                             asString(item.get("time")),
                             asString(item.get("title")),
                             asString(item.get("description")),
+                            asString(item.get("icon")),
+                            asString(item.get("imageUrl")),
+                            asString(item.get("parentNote")),
+                            asString(item.get("audioUrl")),
+                            asString(item.get("transitionHint")),
+                            asInteger(item.get("sortOrder")),
                             Boolean.TRUE.equals(item.get("completed")),
                             asString(item.get("completedAt"))
                     ));
@@ -320,6 +332,20 @@ public class ScheduleService {
 
     private String asString(Object o) {
         return o == null ? null : o.toString();
+    }
+
+    private Integer asInteger(Object o) {
+        if (o instanceof Number number) {
+            return number.intValue();
+        }
+        if (o == null) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(o.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private ApiException firestoreError(Exception e) {

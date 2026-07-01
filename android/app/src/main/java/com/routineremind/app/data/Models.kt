@@ -26,6 +26,12 @@ data class ScheduleItem(
     val time: String,
     val title: String,
     val description: String? = null,
+    val icon: String? = null,
+    val imageUrl: String? = null,
+    val parentNote: String? = null,
+    val audioUrl: String? = null,
+    val transitionHint: String? = null,
+    val sortOrder: Int? = null,
     val completed: Boolean = false,
     val completedAt: String? = null,
 )
@@ -71,6 +77,30 @@ data class RoleRequest(val role: String)
 data class LinkRequest(val shareCode: String)
 
 data class TextResponseRequest(val text: String)
+
+data class ChatRequest(
+    val ownerUid: String? = null,
+    val message: String,
+)
+
+data class ChatResponse(
+    val answer: String,
+    val scheduleId: String,
+    val matchedItem: ScheduleItem? = null,
+    val source: String? = null,
+    val createdAt: String? = null,
+)
+
+data class ChatMessage(
+    val id: String,
+    val ownerUid: String,
+    val question: String,
+    val answer: String,
+    val scheduleId: String? = null,
+    val matchedItemId: String? = null,
+    val source: String? = null,
+    val createdAt: String? = null,
+)
 
 data class MediaUploadRequest(val contentType: String)
 

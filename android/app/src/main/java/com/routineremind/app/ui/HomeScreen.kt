@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.routineremind.app.data.LinkedStudent
-import com.routineremind.app.data.Question
 import com.routineremind.app.data.ScheduleItem
 import com.routineremind.app.ui.theme.Primary
 import com.routineremind.app.ui.theme.Success
@@ -61,7 +60,7 @@ fun HomeScreen(vm: AppViewModel) {
                 TodaySchedule(vm)
                 if (profile.role == "student" && vm.schedule != null) {
                     Spacer(Modifier.height(16.dp))
-                    QuestionsSection(vm)
+                    ScheduleChat(vm)
                     Spacer(Modifier.height(16.dp))
                     NativeMediaCard(vm)
                 }
@@ -207,47 +206,50 @@ private fun NativeMediaCard(vm: AppViewModel) {
 }
 
 @Composable
-private fun QuestionsSection(vm: AppViewModel) {
-    Text("Questions", style = MaterialTheme.typography.headlineMedium)
-    Spacer(Modifier.height(12.dp))
-    if (vm.questions.isEmpty()) {
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("No questions yet", style = MaterialTheme.typography.titleLarge)
-                Text("Questions from your parent will appear here.", color = TextSecondary)
-            }
-        }
-    } else {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            vm.questions.forEach { question -> QuestionCard(question, vm) }
-        }
-    }
-}
-
-@Composable
-private fun QuestionCard(question: Question, vm: AppViewModel) {
-    var answer by remember(question.id) { mutableStateOf("") }
+private fun ScheduleChat(vm: AppViewModel) {
+    var question by remember { mutableStateOf("") }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text(question.prompt, style = MaterialTheme.typography.bodyLarge)
-            Spacer(Modifier.height(10.dp))
+            Text("Ask about my day", style = MaterialTheme.typography.headlineMedium)
+            Text("I can answer questions from today's schedule.", color = TextSecondary)
+            Spacer(Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(onClick = { vm.askChat("What do I do now?") }, modifier = Modifier.weight(1f)) {
+                    Text("What now?")
+                }
+                OutlinedButton(onClick = { vm.askChat("What comes next?") }, modifier = Modifier.weight(1f)) {
+                    Text("What next?")
+                }
+            }
+            Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = answer,
-                onValueChange = { answer = it },
-                label = { Text("Your answer") },
-                minLines = 3,
+                value = question,
+                onValueChange = { question = it },
+                label = { Text("Ask a schedule question") },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
             Button(
                 onClick = {
-                    vm.submitAnswer(question.id, answer)
-                    answer = ""
+                    vm.askChat(question)
+                    question = ""
                 },
-                enabled = vm.answeringQuestionId != question.id,
+                enabled = !vm.askingChat,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(if (vm.answeringQuestionId == question.id) "Submitting…" else "Submit answer")
+                Text(if (vm.askingChat) "Thinking…" else "Ask RoutineRemind")
+            }
+            vm.chatAnswer?.let { answer ->
+                Spacer(Modifier.height(12.dp))
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(14.dp)) {
+                        Text("RoutineRemind says", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(answer.answer, style = MaterialTheme.typography.bodyLarge)
+                        answer.matchedItem?.let {
+                            Text("About: ${it.title}", color = TextSecondary)
+                        }
+                    }
+                }
             }
         }
     }
@@ -266,7 +268,7 @@ private fun ScheduleRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                item.time,
+                item.icon?.takeIf { it.isNotBlank() } ?: item.time,
                 style = MaterialTheme.typography.bodyLarge,
                 color = Primary,
                 modifier = Modifier.padding(end = 16.dp),
@@ -278,6 +280,9 @@ private fun ScheduleRow(
                     textDecoration = if (item.completed) TextDecoration.LineThrough else null,
                 )
                 item.description?.takeIf { it.isNotBlank() }?.let {
+                    Text(it, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                }
+                item.transitionHint?.takeIf { it.isNotBlank() }?.let {
                     Text(it, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
                 }
             }

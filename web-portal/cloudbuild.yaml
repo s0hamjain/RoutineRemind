@@ -1,0 +1,18 @@
+substitutions:
+  _IMAGE: us-central1-docker.pkg.dev/routineremind/routineremind/web-portal:latest
+  _API_BASE_URL: /api/v1
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg
+      - VITE_API_BASE_URL=${_API_BASE_URL}
+      - -t
+      - ${_IMAGE}
+      - .
+  - name: gcr.io/cloud-builders/docker
+    args: [push, ${_IMAGE}]
+
+images:
+  - ${_IMAGE}

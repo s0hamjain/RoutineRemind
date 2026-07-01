@@ -1,0 +1,26 @@
+{
+  "_comment": "TEMPLATE ONLY. Replace with the real google-services.json from the Firebase/Identity Platform console (Android app, package com.routineremind.app), then save it as 'google-services.json' in this same folder. The real file is git-ignored.",
+  "project_info": {
+    "project_number": "YOUR_PROJECT_NUMBER",
+    "project_id": "routineremind",
+    "storage_bucket": "routineremind-media"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "YOUR_MOBILE_SDK_APP_ID",
+        "android_client_info": {
+          "package_name": "com.routineremind.app"
+        }
+      },
+      "api_key": [
+        { "current_key": "YOUR_ANDROID_API_KEY" }
+      ],
+      "oauth_client": [],
+      "services": {
+        "appinvite_service": { "other_platform_oauth_client": [] }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,46 @@
+# ---- Secrets (NEVER commit) ----
+secrets/
+*.serviceaccount.json
+google-services.json
+**/src/main/resources/service-account*.json
+
+# ---- Node / web (Angular + Vue) ----
+node_modules/
+dist/
+.expo/
+web-admin/dist/
+web-admin/.angular/
+web-portal/dist/
+npm-debug.log*
+yarn-error.log*
+.env
+.env.*
+
+# ---- Java / Spring Boot / Gradle ----
+backend/target/
+backend/build/
+backend/.gradle/
+android/.gradle/
+android/build/
+android/app/build/
+**/*.class
+
+# ---- Android ----
+android/local.properties
+android/.idea/
+android/captures/
+*.apk
+*.aab
+.cxx/
+
+# ---- C++ / native build ----
+**/native-media/build/
+**/*.o
+**/*.so
+
+# ---- IDE / OS ----
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

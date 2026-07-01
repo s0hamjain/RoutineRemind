@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// RoutineRemind — restrictive rules.
+// All data access goes through the backend service account (Admin SDK),
+// which bypasses these rules. Client SDKs are denied direct access.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

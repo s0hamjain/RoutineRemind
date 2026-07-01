@@ -121,16 +121,7 @@ public class ChatService {
             return Optional.of(new GroundedAnswer("When you finish, tap Done on your schedule card. Then I can show what comes next.", now, "rules"));
         }
 
-        for (ScheduleItem item : items) {
-            String haystack = normalize(String.join(" ",
-                    item.title() == null ? "" : item.title(),
-                    item.description() == null ? "" : item.description(),
-                    item.parentNote() == null ? "" : item.parentNote()));
-            if (!haystack.isBlank() && tokens(normalized).stream().anyMatch(token -> token.length() > 3 && haystack.contains(token))) {
-                return Optional.of(new GroundedAnswer(itemAnswer("I found this in your routine", item), item, "rules"));
-            }
-        }
-
+        // Let Gemini handle specific questions (time, place, details) — it can actually answer them.
         return Optional.empty();
     }
 
@@ -191,16 +182,21 @@ public class ChatService {
                     .append('\n');
         }
         return """
-                You are RoutineRemind, a calm assistant for a child with autism.
-                Answer only using today's routine below. If the answer is not in the routine, say: "I am not sure. Let's ask your parent."
-                Keep the answer under 2 short sentences. Use simple, concrete words. Do not mention policies or that you are an AI.
+                You are RoutineRemind, a friendly helper for a child with autism.
+                Answer the child's question using only the routine listed below.
+                Rules:
+                - If the question asks about a time, always say the exact time from the routine.
+                - If the question asks what something is, describe it simply.
+                - Keep the answer to 1-2 short sentences using simple words a child can understand.
+                - If the answer is not in the routine, say: "I am not sure. Ask your parent!"
+                - Do not say you are an AI or mention any policies.
 
                 Schedule title: %s
                 Schedule date: %s
-                Routine:
+                Today's routine (in order):
                 %s
-                Child question: %s
-                """.formatted(schedule.title(), schedule.date(), routine, message.trim());
+                Child's question: %s
+                Answer:""".formatted(schedule.title(), schedule.date(), routine, message.trim());
     }
 
     private String vertexEndpoint() {
@@ -235,7 +231,12 @@ public class ChatService {
     }
 
     private String itemAnswer(String prefix, ScheduleItem item) {
-        StringBuilder answer = new StringBuilder(prefix).append(": ").append(item.title()).append(".");
+        StringBuilder answer = new StringBuilder(prefix).append(" it is ");
+        answer.append(item.title());
+        if (item.time() != null && !item.time().isBlank()) {
+            answer.append(" at ").append(item.time());
+        }
+        answer.append(".");
         if (item.transitionHint() != null && !item.transitionHint().isBlank()) {
             answer.append(" ").append(item.transitionHint());
         } else if (item.parentNote() != null && !item.parentNote().isBlank()) {

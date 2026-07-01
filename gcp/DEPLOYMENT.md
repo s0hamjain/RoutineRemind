@@ -6,6 +6,12 @@ configures Cloud Scheduler to trigger FCM reminders.
 Project: `routineremind`
 Region: `us-central1`
 
+Run these commands from the repository root:
+
+```bash
+cd /Users/sandeepjain/Downloads/RoutineRemind
+```
+
 ## 1. One-time setup
 
 ```bash
@@ -44,7 +50,7 @@ export SCHEDULER_TOKEN="$(openssl rand -hex 32)"
 Build and deploy:
 
 ```bash
-gcloud builds submit ../backend \
+gcloud builds submit backend \
   --tag us-central1-docker.pkg.dev/routineremind/routineremind/api:latest
 
 gcloud run deploy routineremind-api \
@@ -73,8 +79,8 @@ gcloud run services update routineremind-api \
 ## 3. Angular admin
 
 ```bash
-gcloud builds submit ../web-admin \
-  --config ../web-admin/cloudbuild.yaml \
+gcloud builds submit web-admin \
+  --config web-admin/cloudbuild.yaml \
   --substitutions _API_BASE_URL="$API_URL/api/v1"
 
 gcloud run deploy routineremind-admin \
@@ -89,8 +95,8 @@ echo "$ADMIN_URL"
 ## 4. Vue student portal
 
 ```bash
-gcloud builds submit ../web-portal \
-  --config ../web-portal/cloudbuild.yaml \
+gcloud builds submit web-portal \
+  --config web-portal/cloudbuild.yaml \
   --substitutions _API_BASE_URL="$API_URL/api/v1"
 
 gcloud run deploy routineremind-portal \
@@ -151,5 +157,5 @@ ship with Android reminders first.
 For browser media uploads:
 
 ```bash
-gsutil cors set storage-cors.json gs://routineremind-media
+gsutil cors set gcp/storage-cors.json gs://routineremind-media
 ```
